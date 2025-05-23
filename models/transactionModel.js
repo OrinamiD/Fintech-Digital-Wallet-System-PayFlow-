@@ -6,7 +6,7 @@ transactionSchema = new mongoose.Schema({
     sender: {type: String, require: true},
     receive: {type: String, require: true},
     amount: {type: Number, default: 0},
-    accountType: {type: String},
+    type: {type: String},
 
 
 }, {timestamps: true})

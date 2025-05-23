@@ -4,7 +4,7 @@ const mongoose = require("mongoose")
 
 const walletSchema = new mongoose.Schema({
     user_id: {type: String},
-    walletBalance: {type: Number, default: 0}
+    balance: {type: Number, default: 0}
     
 }, {timestamps: true})
 
