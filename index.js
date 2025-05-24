@@ -12,7 +12,7 @@ const jwt = require("jsonwebtoken")
 const User = require("./models/userModel")
 const Wallet = require("./models/walletModel")
 const Transaction = require("./models/transactionModel")
-const { handleUserRegistration, handleUserLogin, handleForgetPassword, handleResetPassword, fundingAccount, fundsTransfer, handleUserWallet, handleUserTransaction,  } = require("./Controller")
+const { handleUserRegistration, handleUserLogin, handleForgetPassword, handleResetPassword, fundingAccount, fundsTransfer, handleUserWallet, handleGetAllTransactions, handleUserTransaction,  } = require("./Controller")
 const { validateRegistration, validateLogin, auth, validateFogetPaasword, validateResetPassword, validateFundingAccount } = require("./middleware")
 
 
@@ -51,15 +51,11 @@ app.post("/forget-password", validateFogetPaasword, handleForgetPassword)
 
 
 // Rest password
-app.patch("/reset-password", validateResetPassword, auth, handleResetPassword)
-
-
-// app.get("/all-users", handleGetAllUser)
-
+app.patch("/reset-password", validateResetPassword, handleResetPassword)
 
 
 // Transfer funds betwen users
-app.post("/money-transfer", auth, fundsTransfer)
+app.post("/money-transfer",  fundsTransfer)
 
 
 // funding users account
@@ -67,8 +63,13 @@ app.post("/fund-wallet", validateFundingAccount, auth, fundingAccount)
 
 
 // Check out for user wallet
-app.get("/wallet", auth, handleUserWallet)
+app.get("/wallet", handleUserWallet)
 
 
 // check all transactions
- app.get("/users-transaction", auth, handleUserTransaction)
+ app.get("/users-transaction", auth, handleGetAllTransactions)
+
+
+ // check one user transactions
+
+ app.get("/user-transaction", auth, handleUserTransaction)

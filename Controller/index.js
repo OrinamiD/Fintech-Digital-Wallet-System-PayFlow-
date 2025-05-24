@@ -130,7 +130,7 @@ const handleResetPassword = async (req, res)=>{
         
         const {password} = req.body
 
-        const user = await User.findOne({email: req.user.email})
+        const user = await User.findOne({email: req.user?.email})
 
         if(!user){
             return res.status(404).json({message: "User account not found"})
@@ -162,7 +162,7 @@ const fundsTransfer = async (req, res)=>{
 
   try {
     
-     const {user_id, email, sender, receiver, balance, amount } = req.body 
+     const {_id, email, sender, receiver, balance, amount } = req.body 
 
         // find the sender by email
       const senderUser = await User.findOne({email: email })
@@ -205,14 +205,14 @@ const fundsTransfer = async (req, res)=>{
      await senderWallet.save()
      await receiverWallet.save()
 
-     const transaction = new Transaction({
-      id: sender._id,receiver: receiver._id, email: sender.email, senderWallet, type},
+     const transaction = new Transaction({_id,
+       sender_id: senderUser?._id, receiver_id: receiverUser?._id, amount},
       {new: true}
     )
     await transaction.save()
 
+    return res.status(200).json({message: "Transaction successful", transaction, senderWallet, receiverWallet, senderUser, receiverUser})
 
-       res.status(200).json({message: "Transaction successful",  receiverbalance: receiverWallet, senderbalace: senderWallet, transaction })
         
   } catch (error) {
     return res.status(500).json({message: error.message})
@@ -275,22 +275,41 @@ const handleUserWallet = async (req, res)=>{
 }
 
 
-const handleUserTransaction = async (req, res)=>{
+const handleGetAllTransactions = async (req, res)=>{
 
    try {
-    
-     const transactions = await Transaction.find()
+  
+     const transaction = await Transaction.find()
 
-       if(transactions.length === 0 ){
+       if(transaction.length === 0 ){
         return res.status(404).json({message: "No transaction found"})
     }
 
-    return res.status(200).json({message: "successful", transactions})
+    return res.status(200).json({message: "successful", transaction})
 
    } catch (error) {
     return res.status(500).json({message: error.message})
    }
 }
+
+const handleUserTransaction =  async (req, res)=>{
+
+   try {
+    
+     const { _id } = req.body
+
+    const user = await Transaction.findOne({_id})
+
+    if(!user){
+        return res.status(404).json({message: "User details not found"})
+    }
+
+    return res.status(200).json({message: "successful", user})
+
+   } catch (error) {
+    return res.status(400).json({message: error.message})
+   }
+ }
 
 module.exports = {
     handleUserRegistration,
@@ -300,6 +319,7 @@ module.exports = {
     fundsTransfer,
     fundingAccount,
     handleUserWallet,
+    handleGetAllTransactions,
     handleUserTransaction
     
 }
