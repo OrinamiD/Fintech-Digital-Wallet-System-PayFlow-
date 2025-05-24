@@ -67,7 +67,7 @@ const auth = async (req, res, next)=>{
        const token = req.header("Authorization")
 
        if(!token){
-        return res.status(400).json({Message: "Access denied"})
+        return res.status(401).json({Message: "Access denied"})
        }
 
     const splitToken = token.split(" ")
@@ -77,7 +77,7 @@ const auth = async (req, res, next)=>{
     const decoded = jwt.verify(realToken, `${process.env.ACCESS_TOKEN}`)
 
     if(!decoded){
-         return res.status(400).json({Message: " Please login"})
+         return res.status(401).json({Message: " Please login"})
     }
 
     const user = await User.find(decoded.id)
@@ -120,8 +120,14 @@ const validateResetPassword = async (req, res, next)=>{
 
     const {password} = req.body
 
+    const errors = []
+
     if(!password){
-        return res.status(401).json({message: "Please provide your password"})
+       errors.push("Please provide your password") 
+}
+
+if(errors.length > 0 ){
+    return res.status(500).json({message: errors})
 }
 next()
 

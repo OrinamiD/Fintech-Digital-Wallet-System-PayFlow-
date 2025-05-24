@@ -2,7 +2,7 @@ const bcrypt = require("bcryptjs")
 const User = require("../models/userModel")
 const Wallet = require("../models/walletModel")
 const jwt = require("jsonwebtoken")
-const sendForgetPasswordMail = require("../sendMails/forgetPasswordEmails")
+const sendForgetPasswordEmail = require("../sendMails/forgetPasswordEmails")
 const registrationEmail = require("../sendMails/registrationEmail")
 const Transaction = require("../models/transactionModel")
 
@@ -36,7 +36,6 @@ const handleUserRegistration = async (req, res)=>{
     
             const wallet = new Wallet({
                 user_id: newUser?._id,
-                type: "savings",
                 balance})
                 
                 await wallet.save()
@@ -115,7 +114,7 @@ const handleForgetPassword = async (req, res)=>{
     // send message with token
 const accessToken = jwt.sign({user_id: user?._id}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "5m"})
 
-await sendForgetPasswordMail(email, accessToken)
+await sendForgetPasswordEmail(email, accessToken)
 
 return res.status(200).json({message: "Please check your email inbox"})
 
@@ -137,13 +136,13 @@ const handleResetPassword = async (req, res)=>{
             return res.status(404).json({message: "User account not found"})
         }
 
-        const harshedpassword = await bcrypt.hash(password, 12)
+        const hashedpassword = await bcrypt.hash(password, 12)
 
-        user.password = harshedpassword
+        user.password = hashedpassword
 
         await user.save()
 
-         const accessToken = jwt.sign({user: user_id}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "30m"})
+         const accessToken = jwt.sign({user: user_id}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "5m"})
 
          const refreshToken = jwt.sign({user: user_id}, `${process.env.REFRESH_TOKEN}`, {expiresIn: "7d"})
 
@@ -206,10 +205,17 @@ const fundsTransfer = async (req, res)=>{
      await senderWallet.save()
      await receiverWallet.save()
 
-       res.status(200).json({message: "Transaction successful",  receiverbalance: receiverWallet, senderbalace: senderWallet })
+     const transaction = new Transaction({
+      id: sender._id,receiver: receiver._id, email: sender.email, senderWallet, type},
+      {new: true}
+    )
+    await transaction.save()
+
+
+       res.status(200).json({message: "Transaction successful",  receiverbalance: receiverWallet, senderbalace: senderWallet, transaction })
         
   } catch (error) {
-    return res.status(200).json({message: error.message})
+    return res.status(500).json({message: error.message})
   }
 
     
@@ -269,15 +275,21 @@ const handleUserWallet = async (req, res)=>{
 }
 
 
-const handleUserTransaction = async (req, res)=>{g
+const handleUserTransaction = async (req, res)=>{
 
-    const users = await Transaction.find()
-  
-       if(!users){
-        return res.status(404).json({message: "User account not found"})
+   try {
+    
+     const transactions = await Transaction.find()
+
+       if(transactions.length === 0 ){
+        return res.status(404).json({message: "No transaction found"})
     }
 
-    return res.status(200).json({message: "successful", users})
+    return res.status(200).json({message: "successful", transactions})
+
+   } catch (error) {
+    return res.status(500).json({message: error.message})
+   }
 }
 
 module.exports = {
