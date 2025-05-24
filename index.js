@@ -12,7 +12,7 @@ const jwt = require("jsonwebtoken")
 const User = require("./models/userModel")
 const Wallet = require("./models/walletModel")
 const Transaction = require("./models/transactionModel")
-const { handleUserRegistration, handleUserLogin, handleForgetPassword, handleResetPassword, fundingAccount, fundsTransfer, handleUserWallet, handleGetAllTransactions, handleUserTransaction,  } = require("./Controller")
+const { handleUserRegistration, handleUserLogin, handleForgetPassword, handleResetPassword, fundingAccount, fundsTransfer, handleUserWallet, handleGetAllTransactions, handleUserTransactions,  } = require("./Controller")
 const { validateRegistration, validateLogin, auth, validateFogetPaasword, validateResetPassword, validateFundingAccount } = require("./middleware")
 
 
@@ -72,4 +72,4 @@ app.get("/wallet", handleUserWallet)
 
  // check one user transactions
 
- app.get("/user-transaction", auth, handleUserTransaction)
+ app.get("/user-transaction", auth, handleUserTransactions)
