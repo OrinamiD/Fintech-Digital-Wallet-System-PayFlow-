@@ -160,5 +160,4 @@ module.exports = {
     validateResetPassword,
     validateFundingAccount
 
-    
 }

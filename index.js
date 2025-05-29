@@ -12,7 +12,7 @@ const jwt = require("jsonwebtoken")
 const User = require("./models/userModel")
 const Wallet = require("./models/walletModel")
 const Transaction = require("./models/transactionModel")
-const { handleUserRegistration, handleUserLogin, handleForgetPassword, handleResetPassword, fundingAccount, fundsTransfer, handleUserWallet, handleGetAllTransactions, handleUserTransactions,  } = require("./Controller")
+const { handleUserRegistration, handleUserLogin, handleResetPassword, fundingAccount, fundsTransfer, handleUserWallet, handleGetAllTransactions, handleUserTransactions, handleForgotPassword,  } = require("./Controller")
 const { validateRegistration, validateLogin, auth, validateFogetPaasword, validateResetPassword, validateFundingAccount } = require("./middleware")
 
 
@@ -49,7 +49,7 @@ app.post("/login", validateLogin, handleUserLogin)
 
 
 // fotgotten password
-app.post("/forget-password", validateFogetPaasword, handleForgetPassword)
+app.post("/forgot-password", validateFogetPaasword, handleForgotPassword)
 
 
 
@@ -58,21 +58,40 @@ app.patch("/reset-password", validateResetPassword, handleResetPassword)
 
 
 // Transfer funds betwen users
-app.post("/money-transfer",  fundsTransfer)
+app.post("/money-transfer", auth, fundsTransfer)
 
 
 // funding users account
-app.post("/fund-wallet", validateFundingAccount, auth, fundingAccount)
+app.post("/fund-wallet", validateFundingAccount, fundingAccount)
+
+
+// check all wallet in the database
+ app.get("/all-wallet", auth, async (req, res)=>{
+
+    const users = await Wallet.find()
+
+     return res.status(200).json({message: "successful", users})
+ })
 
 
 // Check out for user wallet
-app.get("/wallet", handleUserWallet)
+app.get("/wallet", auth, handleUserWallet)
 
 
 // check all transactions
- app.get("/users-transaction", auth, handleGetAllTransactions)
+ app.get("/users-transaction",handleGetAllTransactions)
 
 
  // check one user transactions
+ app.get("/user-transaction", auth,  handleUserTransactions)
 
- app.get("/user-transaction", auth, handleUserTransactions)
+
+ // get all users in the database
+ app.get("/all-users", async ( req, res)=>{
+
+    const user = await User.find()
+
+    return res.status(200).json({message: "successful", user})
+ })
+
+

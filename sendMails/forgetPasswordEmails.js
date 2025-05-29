@@ -4,7 +4,7 @@
 
 const nodemailer = require("nodemailer")
 
-const sendForgetPasswordEmail = async ( email, token) =>{
+const forgotPasswordEmail = async ( email, token) =>{
 
     try {
         
@@ -80,6 +80,6 @@ const validEmail = (email) => {
   }
 
 module.exports = {
-  sendForgetPasswordEmail,
+ forgotPasswordEmail,
   validEmail
 }

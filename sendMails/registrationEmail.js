@@ -2,7 +2,7 @@
 
 const nodemailer = require("nodemailer")
 
-const registrationEmail = async (name, email, password, walletBalance )=>{
+const registrationEmail = async (name, email, password)=>{
 
     const mailTranspot = nodemailer.createTransport({
         service: "gmail",
@@ -24,4 +24,17 @@ const registrationEmail = async (name, email, password, walletBalance )=>{
     await mailTranspot.sendMail(emailDetails)
 }
 
-module.exports = registrationEmail
+
+const validEmail = (email) => {
+    const re =
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+  }
+
+
+
+module.exports  = {
+    registrationEmail,
+    validEmail
+}
+

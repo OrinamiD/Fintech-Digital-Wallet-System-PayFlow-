@@ -2,9 +2,10 @@ const bcrypt = require("bcryptjs")
 const User = require("../models/userModel")
 const Wallet = require("../models/walletModel")
 const jwt = require("jsonwebtoken")
-const sendForgetPasswordEmail = require("../sendMails/forgetPasswordEmails")
-const registrationEmail = require("../sendMails/registrationEmail")
+
+
 const Transaction = require("../models/transactionModel")
+const {registrationEmail }= require("../sendMails/registrationEmail")
 
 
 
@@ -14,7 +15,7 @@ const handleUserRegistration = async (req, res)=>{
         try {
             
             
-        const { name, email, password, walletBalance } = req.body
+        const { name, email, password} = req.body
     
     
         const existingUser = await User.findOne({ email })
@@ -29,23 +30,21 @@ const handleUserRegistration = async (req, res)=>{
         const newUser = new User({
             name,
             email,
-            password: hashedPassword,
+            password: hashedPassword
             })
     
              await newUser.save()
     
             const wallet = new Wallet({
                 user_id: newUser?._id,
-                balance})
+                balance: 0})
                 
                 await wallet.save()
-
                 
 
-    
-    
+                
                 // send email
-await registrationEmail(name, email, password, walletBalance)
+await registrationEmail(name, email, password)
                 
     
             return res.status(201).json({message: "Registration successfull",
@@ -99,7 +98,7 @@ const handleUserLogin = async (req, res)=>{
     
 }
 
-const handleForgetPassword = async (req, res)=>{
+const handleForgotPassword = async (req, res)=>{
 
    try {
 
@@ -114,7 +113,7 @@ const handleForgetPassword = async (req, res)=>{
     // send message with token
 const accessToken = jwt.sign({user_id: user?._id}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "5m"})
 
-await sendForgetPasswordEmail(email, accessToken)
+await forgotPasswordEmail(email, accessToken)
 
 return res.status(200).json({message: "Please check your email inbox"})
 
@@ -174,7 +173,7 @@ const fundsTransfer = async (req, res)=>{
       const senderWallet = await Wallet.findOne({user_id: senderUser?._id})
 
       if(!senderWallet){
-        return res.status(404).json({message: "User wallet not found"})
+        return res.status(404).json({message: "wallet not found"})
       }
 
       // find receiver by email
@@ -182,14 +181,13 @@ const fundsTransfer = async (req, res)=>{
    
 
       if(!receiverUser){
-        return res.status(404).json({message: "User account not found"})
+        return res.status(404).json({message: "account not found"})
       }
 
       const receiverWallet = await Wallet.findOne({user_id: receiverUser._id })
          
-
       if(!receiverWallet){
-        return res.status(404).json({message: "User wallet not found"})
+        return res.status(404).json({message: "Your wallet not found4"})
       }
         
 
@@ -205,13 +203,13 @@ const fundsTransfer = async (req, res)=>{
      await senderWallet.save()
      await receiverWallet.save()
 
-     const transaction = new Transaction({_id,
-       sender_id: senderUser?._id, receiver_id: receiverUser?._id, amount},
-      {new: true}
-    )
-    await transaction.save()
+      await new Transaction({ sender: sender?._id, receiver: receiver?._id, amount, type: 'debit' }).save()
 
-    return res.status(200).json({message: "Transaction successful", transaction, senderWallet, receiverWallet, senderUser, receiverUser})
+    await new Transaction({ sender: sender._id, receiver: receiver?._id, amount, type: 'credit' }).save()
+
+
+
+    return res.status(200).json({message: "Transaction successful", senderWallet, senderUser, receiverWallet, senderUser})
 
         
   } catch (error) {
@@ -224,8 +222,10 @@ const fundsTransfer = async (req, res)=>{
 const fundingAccount = async (req, res)=>{
 
     try {
+
+      console.log(req.user)
         
-        const { email, amount,} = req.body
+    const {email, amount} = req.body
 
      const user = await User.findOne({ email })
 
@@ -233,7 +233,8 @@ const fundingAccount = async (req, res)=>{
        return res.status(404).json({message: "User account not found"})
     }
     // fund wallet
-    const wallet = await Wallet.findOne({ user_id: user._id })
+    const wallet = await Wallet.findOne({ user_id: user?._id })
+
 
     if (!wallet){
       return res.status(404).json({ message: "Wallet not found for this user" });
@@ -258,10 +259,12 @@ const fundingAccount = async (req, res)=>{
 const handleUserWallet = async (req, res)=>{
 
   try {
-    
-      const {_id} = req.body
 
-    const wallet = await Wallet.find({_id})
+    console.log(req.user)
+    
+      const { user_id } = req.body
+
+    const wallet = await Wallet.find({user_id})
 
     if(!wallet){
         return res.status(404).json({message: "User account not found"})
@@ -274,14 +277,16 @@ const handleUserWallet = async (req, res)=>{
   }
 }
 
-
+// get all users past transaction 
 const handleGetAllTransactions = async (req, res)=>{
 
    try {
+
+    console.log(req.user)
   
      const transaction = await Transaction.find()
 
-       if(transaction.length === 0 ){
+       if(!transaction){
         return res.status(404).json({message: "No transaction found"})
     }
 
@@ -292,13 +297,23 @@ const handleGetAllTransactions = async (req, res)=>{
    }
 }
 
+
+// get user past transactions
 const handleUserTransactions =  async (req, res)=>{
 
    try {
-    
-     const { _id } = req.body
 
-    const user = await Transaction.findOne({_id})
+     console.log(req.user)
+    
+     const {user_id } = req.body
+
+    const user = await Transaction.findOne({
+      $or: [
+        { sender: user_id },
+        { receiver: user_id }
+      ]})
+
+  
 
     if(!user){
         return res.status(404).json({message: "User details not found"})
@@ -314,7 +329,7 @@ const handleUserTransactions =  async (req, res)=>{
 module.exports = {
     handleUserRegistration,
     handleUserLogin,
-    handleForgetPassword,
+    handleForgotPassword,
     handleResetPassword,
     fundsTransfer,
     fundingAccount,
