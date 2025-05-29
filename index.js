@@ -12,8 +12,8 @@ const jwt = require("jsonwebtoken")
 const User = require("./models/userModel")
 const Wallet = require("./models/walletModel")
 const Transaction = require("./models/transactionModel")
-const { handleUserRegistration, handleUserLogin, handleResetPassword, fundingAccount, fundsTransfer, handleUserWallet, handleGetAllTransactions, handleUserTransactions, handleForgotPassword,  } = require("./Controller")
-const { validateRegistration, validateLogin, auth, validateFogetPaasword, validateResetPassword, validateFundingAccount } = require("./middleware")
+const { handleUserRegistration, handleUserLogin, handleResetPassword, handleGetAllTransactions, handleUserTransactions, handleForgotPassword, handleFundWallet, handleMoneyTransfer, handleGetUserWallet,  } = require("./Controller")
+const { validateRegistration, validateLogin, auth, validateFogetPaasword, validateResetPassword, validateFundingWallet, validateMoneyTransfer } = require("./middleware")
 
 
 
@@ -58,40 +58,40 @@ app.patch("/reset-password", validateResetPassword, handleResetPassword)
 
 
 // Transfer funds betwen users
-app.post("/money-transfer", auth, fundsTransfer)
+app.post("/money-transfer", validateMoneyTransfer, auth, handleMoneyTransfer)
 
 
 // funding users account
-app.post("/fund-wallet", validateFundingAccount, fundingAccount)
-
-
-// check all wallet in the database
- app.get("/all-wallet", auth, async (req, res)=>{
-
-    const users = await Wallet.find()
-
-     return res.status(200).json({message: "successful", users})
- })
+app.post("/fund-wallet", validateFundingWallet, auth, handleFundWallet)
 
 
 // Check out for user wallet
-app.get("/wallet", auth, handleUserWallet)
+app.get("/wallet", auth, handleGetUserWallet)
 
 
 // check all transactions
- app.get("/users-transaction",handleGetAllTransactions)
+ app.get("/all-users-transactions", auth, handleGetAllTransactions)
 
 
  // check one user transactions
  app.get("/user-transaction", auth,  handleUserTransactions)
 
 
+
  // get all users in the database
- app.get("/all-users", async ( req, res)=>{
 
-    const user = await User.find()
+//  app.get("/all-users", async ( req, res)=>{
 
-    return res.status(200).json({message: "successful", user})
- })
+//     const user = await User.find()
 
+//     return res.status(200).json({message: "successful", user})
+//  })
 
+// check all wallet in the database
+
+//  app.get("/all-wallet", auth, async (req, res)=>{
+
+//     const users = await Wallet.find()
+
+//      return res.status(200).json({message: "successful", users})
+//  })

@@ -133,7 +133,7 @@ next()
 
 }
 
-const validateFundingAccount = async (req, res, next)=>{
+const validateFundingWallet = async (req, res, next)=>{
 
    const { email, sender, receiver, type, balance, amount } = req.body 
 
@@ -150,7 +150,34 @@ const validateFundingAccount = async (req, res, next)=>{
 
     next()
 }
+const validateMoneyTransfer = async (req, res, next)=>{
 
+     const {_id, email, sender, receiver, balance, amount } = req.body
+
+     const errors = []
+
+     if(!email){
+        errors.push("please, provide your email")
+     }
+
+      if(!sender){
+        errors.push("please, provide sender email")
+     }
+
+     if(!receiver){
+        errors.push("please, provide receiver's email")
+     }
+
+      if(!amount){
+        errors.push("please, provide your amount")
+     }
+
+     if(errors.length > 0 ){
+        return res.status(200).json({message: errors})
+     }
+
+     next()
+}
 
 module.exports = {
     validateRegistration,
@@ -158,6 +185,7 @@ module.exports = {
     auth,
     validateFogetPaasword,
     validateResetPassword,
-    validateFundingAccount
+    validateFundingWallet,
+    validateMoneyTransfer
 
 }

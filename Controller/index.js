@@ -157,7 +157,7 @@ const handleResetPassword = async (req, res)=>{
 
 }
 
-const fundsTransfer = async (req, res)=>{
+const handleMoneyTransfer = async (req, res)=>{
 
   try {
     
@@ -203,9 +203,9 @@ const fundsTransfer = async (req, res)=>{
      await senderWallet.save()
      await receiverWallet.save()
 
-      await new Transaction({ sender: sender?._id, receiver: receiver?._id, amount, type: 'debit' }).save()
+      await new Transaction({ sender_id: sender?._id, receiver_id: receiver?._id, amount, type: 'debit' }).save()
 
-    await new Transaction({ sender: sender._id, receiver: receiver?._id, amount, type: 'credit' }).save()
+    await new Transaction({ sender_id: sender?._id, receive_id: receiver?._id, amount, type: 'credit' }).save()
 
 
 
@@ -219,7 +219,8 @@ const fundsTransfer = async (req, res)=>{
     
 }
 
-const fundingAccount = async (req, res)=>{
+
+const handleFundWallet = async (req, res)=>{
 
     try {
 
@@ -256,7 +257,7 @@ const fundingAccount = async (req, res)=>{
 
 }
 
-const handleUserWallet = async (req, res)=>{
+const handleGetUserWallet = async (req, res)=>{
 
   try {
 
@@ -305,15 +306,14 @@ const handleUserTransactions =  async (req, res)=>{
 
      console.log(req.user)
     
-     const {user_id } = req.body
+     const { user_id } = req.body
 
-    const user = await Transaction.findOne({
-      $or: [
-        { sender: user_id },
-        { receiver: user_id }
-      ]})
+    const user = await Transaction.findOne({ user_id })
+      // $or: [
+      //   { sender: user_id },
+      //   { receiver: user_id }
+      // ]})
 
-  
 
     if(!user){
         return res.status(404).json({message: "User details not found"})
@@ -331,9 +331,9 @@ module.exports = {
     handleUserLogin,
     handleForgotPassword,
     handleResetPassword,
-    fundsTransfer,
-    fundingAccount,
-    handleUserWallet,
+    handleMoneyTransfer,
+    handleFundWallet,
+    handleGetUserWallet,
     handleGetAllTransactions,
     handleUserTransactions
     
